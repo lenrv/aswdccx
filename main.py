@@ -131,9 +131,11 @@ async def cb(call: CallbackQuery):
     )
 
         elif call.data == "dev":
-            await call.message.answer("💬 **ارسل الان رسالتك للتواصل مع المطور**
-
-📍 سيتم تحويل رسالتك إلى المطور البوت", reply_markup=cancel_button())
+    await call.message.answer(
+        "💬 **ارسل الان رسالتك للتواصل مع المطور**\n"
+        "📍 سيتم تحويل رسالتك إلى المطور البوت",
+        reply_markup=cancel_button()
+    )
 
         elif call.data == "ads":
             await call.message.answer("💬 **ارسل الان رسالتك للاشتراك في الإعلانات أو استفسار عن الإعلانات**
