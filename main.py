@@ -124,9 +124,11 @@ async def cb(call: CallbackQuery):
         user_state[uid] = call.data
 
         if call.data == "sub":
-            await call.message.answer("💬 **ارسل الان رسالتك الاشتراك في الكلوزات**
-
-📍سيتم تحويلك إلى قسم الاشتركات", reply_markup=cancel_button())
+    await call.message.answer(
+        "💬 **ارسل الان رسالتك للاشتراك في الكلوزات**\n"
+        "📍 سيتم تحويلك إلى قسم الاشتراكات",
+        reply_markup=cancel_button()
+    )
 
         elif call.data == "dev":
             await call.message.answer("💬 **ارسل الان رسالتك للتواصل مع المطور**
