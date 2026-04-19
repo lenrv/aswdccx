@@ -1,11 +1,9 @@
-# Telegram Bot - Full Support System + Mandatory Subscription
-
 import asyncio
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.enums import ParseMode
 
-API_TOKEN = "8789764033:AAFVHxjlU0NoNcj6552i_h-t2h_E2bznWe4"
+API_TOKEN = "8789764033:AAEHtVKB4xJvvrdlIipg8b1U8JjK_6xWl34"
 ADMIN_ID = 68205305
 
 bot = Bot(token=API_TOKEN, parse_mode=ParseMode.HTML)
@@ -63,10 +61,15 @@ def admin_panel():
         ]
     ])
 
+# ---------------- CANCEL BUTTON ----------------
+def cancel_button():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="❌ إلغاء الإرسال", callback_data="cancel")]
+    ])
+
 # ---------------- START ----------------
 @dp.message(F.text == "/start")
 async def start(msg: Message):
-
     if msg.from_user.id in banned_users:
         await msg.answer("⛔️ انت محظور")
         return
@@ -83,7 +86,6 @@ async def start(msg: Message):
 # ---------------- CALLBACK ----------------
 @dp.callback_query()
 async def cb(call: CallbackQuery):
-
     uid = call.from_user.id
 
     if uid in banned_users:
@@ -102,7 +104,6 @@ async def cb(call: CallbackQuery):
             await call.message.answer("❌ غير مشترك", reply_markup=join_kb())
 
     elif uid == ADMIN_ID:
-
         if call.data == "add":
             admin_step[uid] = "add_channel"
             await call.message.answer("📢 ارسل يوزر القناة @")
@@ -123,25 +124,28 @@ async def cb(call: CallbackQuery):
         user_state[uid] = call.data
 
         if call.data == "sub":
-            await call.message.answer("💬 ارسل رسالتك للاشتراك")
-        elif call.data == "dev":
-            await call.message.answer("💬 ارسل رسالتك للمطور")
-        elif call.data == "ads":
-            await call.message.answer("💬 ارسل طلب الإعلان")
-        elif call.data == "report":
-            await call.message.answer("🚨 ارسل بلاغك")
-        elif call.data == "help":
-            await call.message.answer("📮 المساعدة")
+            await call.message.answer("💬 ارسل رسالتك للاشتراك", reply_markup=cancel_button())
 
-    elif call.data.startswith("ban_"):
-        target = int(call.data.split("_")[1])
-        banned_users.add(target)
-        await call.message.answer("⛔️ تم حظر المستخدم")
+        elif call.data == "dev":
+            await call.message.answer("💬 ارسل رسالتك للمطور", reply_markup=cancel_button())
+
+        elif call.data == "ads":
+            await call.message.answer("💬 ارسل طلب الإعلان", reply_markup=cancel_button())
+
+        elif call.data == "report":
+            await call.message.answer("🚨 ارسل بلاغك", reply_markup=cancel_button())
+
+        elif call.data == "help":
+            await call.message.answer("📮 المساعدة", reply_markup=cancel_button())
+
+    elif call.data == "cancel":
+        await call.message.answer("📋 تم إلغاء الإرسال، العودة للقائمة الرئيسية.",
+                                  reply_markup=menu())  # العودة للقائمة الرئيسية
+        return
 
 # ---------------- ADMIN (REPLY + STEPS) ----------------
 @dp.message(F.from_user.id == ADMIN_ID)
 async def admin_handler(msg: Message):
-
     uid = msg.from_user.id
 
     if msg.reply_to_message:
@@ -158,7 +162,6 @@ async def admin_handler(msg: Message):
 
     step = admin_step[uid]
 
-    # ---------------- ADD CHANNEL (FIXED + MESSAGES) ----------------
     if step == "add_channel":
         ch = msg.text.strip()
 
@@ -210,7 +213,6 @@ async def admin_handler(msg: Message):
 # ---------------- USER → ADMIN ----------------
 @dp.message()
 async def all_messages(msg: Message):
-
     uid = msg.from_user.id
 
     if uid == ADMIN_ID:
