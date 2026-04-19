@@ -171,41 +171,35 @@ async def admin_handler(msg: Message):
     if uid not in admin_step:
         return
 
-    step = admin_step[uid]
+step = admin_step[uid]
 
-    if step == "add_channel":
-        ch = msg.text.strip()
+if step == "add_channel":
+    ch = msg.text.strip()
 
-        if not ch.startswith("@"):
-            await msg.answer("⚠️ لازم اليوزر يبدأ بـ @")
-            return
+    if not ch.startswith("@"):
+        await msg.answer("⚠️ لازم اليوزر يبدأ بـ @")
+        return
 
-        try:
-            chat = await bot.get_chat(ch)
+    try:
+        await bot.get_chat(ch)
+    except Exception as e:
+        await msg.answer(f"❌ خطأ: {e}")
+        return
 
-            bot_member = await bot.get_chat_member(chat.id, bot.id)
-            if bot_member.status not in ["administrator", "creator"]:
-                await msg.answer("❌ لازم تضيف البوت أدمن بالقناة أولاً")
-                return
+    REQUIRED_CHANNELS.append(ch)
+    await msg.answer("✅ تم إضافة القناة")
+    admin_step.pop(uid)
 
-        except:
-            await msg.answer("❌ القناة غير موجودة أو اليوزر خطأ")
-            return
+elif step == "del_channel":
+    ch = msg.text.strip()
 
-        REQUIRED_CHANNELS.append(ch)
-        await msg.answer("✅ تم إضافة القناة")
-        admin_step.pop(uid)
+    if ch in REQUIRED_CHANNELS:
+        REQUIRED_CHANNELS.remove(ch)
+        await msg.answer("❌ تم حذف القناة")
+    else:
+        await msg.answer("⚠️ القناة غير موجودة")
 
-    elif step == "del_channel":
-        ch = msg.text.strip()
-
-        if ch in REQUIRED_CHANNELS:
-            REQUIRED_CHANNELS.remove(ch)
-            await msg.answer("❌ تم حذف القناة")
-        else:
-            await msg.answer("⚠️ القناة غير موجودة")
-
-        admin_step.pop(uid)
+    admin_step.pop(uid)
 
     elif step == "ban":
         try:
