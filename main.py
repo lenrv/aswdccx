@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.enums import ParseMode
 
-API_TOKEN = "8789764033:AAFoNomnpaTmIGTYA3Q3FKAeznfP4HUzjFw"
+API_TOKEN = "8789764033:AAHuULIxUvtOZkD7j2cGuJENZrUu76mVbeI"
 ADMIN_ID = 68205305
 
 bot = Bot(token=API_TOKEN, parse_mode=ParseMode.HTML)
@@ -203,19 +203,14 @@ async def all_messages(msg: Message):
         await msg.answer("⚠️ يجب الاشتراك")
         return
 
-    info = f"""
-📩 رسالة جديدة
-
-👤 الاسم: {msg.from_user.full_name}
-🆔 الايدي: {msg.from_user.id}
-📌 القسم: {user_state.get(msg.from_user.id,'غير محدد')}
-
-📨 الرسالة:
-"""
-
-    await bot.send_message(ADMIN_ID, info)
     fwd = await msg.forward(ADMIN_ID)
     msg_map[fwd.message_id] = msg.from_user.id
+
+    # 🔥 رسالة التأكيد الجديدة
+    await msg.answer(
+        "📩 تم إرسال رسالتك إلى الإدارة بنجاح\n\n"
+        "💬 سيتم الرد عليك في أقرب وقت ممكن"
+    )
 
 # ---------------- RUN ----------------
 async def main():
