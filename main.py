@@ -10,6 +10,7 @@ bot = Bot(token=API_TOKEN, parse_mode=ParseMode.HTML)
 dp = Dispatcher()
 
 # ---------------- DATA ----------------
+
 REQUIRED_CHANNELS = []
 user_state = {}
 msg_map = {}
@@ -17,6 +18,7 @@ admin_step = {}
 banned_users = set()
 
 # ---------------- CHECK SUB ----------------
+
 async def is_subscribed(user_id: int) -> bool:
     if not REQUIRED_CHANNELS:
         return True
@@ -31,14 +33,21 @@ async def is_subscribed(user_id: int) -> bool:
     return True
 
 # ---------------- FORCE JOIN ----------------
+
 def join_kb():
     kb = []
     for ch in REQUIRED_CHANNELS:
-        kb.append([InlineKeyboardButton(text=f"📢 اشتراك {ch}", url=f"https://t.me/{ch.replace('@','')}")])
+        kb.append([
+            InlineKeyboardButton(
+                text=f"📢 اشتراك {ch}",
+                url=f"https://t.me/{ch.replace('@','')}"
+            )
+        ])
     kb.append([InlineKeyboardButton(text="🔄 تحقق", callback_data="check")])
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
 # ---------------- MENU ----------------
+
 def menu():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🔞 اشتراك في الكلوزات", callback_data="sub")],
@@ -49,6 +58,7 @@ def menu():
     ])
 
 # ---------------- ADMIN PANEL ----------------
+
 def admin_panel():
     return InlineKeyboardMarkup(inline_keyboard=[
         [
@@ -62,12 +72,14 @@ def admin_panel():
     ])
 
 # ---------------- CANCEL BUTTON ----------------
+
 def cancel_button():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="❌ إلغاء الإرسال", callback_data="cancel")]
     ])
 
 # ---------------- START ----------------
+
 @dp.message(F.text == "/start")
 async def start(msg: Message):
     if msg.from_user.id in banned_users:
@@ -84,6 +96,7 @@ async def start(msg: Message):
         await msg.answer("👋 مرحبا بك في البوت\n\nاختر القسم المناسب:", reply_markup=menu())
 
 # ---------------- CALLBACK ----------------
+
 @dp.callback_query()
 async def cb(call: CallbackQuery):
     uid = call.from_user.id
@@ -123,98 +136,34 @@ async def cb(call: CallbackQuery):
     elif call.data in ["sub", "dev", "ads", "report", "help"]:
         user_state[uid] = call.data
 
-        if call.data == "sub":
-    await call.message.answer(
-        "💬 **ارسل الان رسالتك للاشتراك في الكلوزات**\n"
-        "📍 سيتم تحويلك إلى قسم الاشتراكات",
-        reply_markup=cancel_button()
-    )
+        texts = {
+            "sub": "💬 ارسل الان رسالتك الاشتراك في الكلوزات\n\n📍سيتم تحويلك إلى قسم الاشتراكات",
+            "ads": "💬 ارسل الان رسالتك الاشتراك في الاعلانات او استفسار عن الإعلانات\n\n📍 سيتم تحويل رسالتك إلى قسم الإعلانات",
+            "dev": "💬 ارسل الان رسالتك التواصل المطور\n\n📍سيتم تحويل رسالتك إلى قسم المطور",
+            "report": "🚨 ارسل الان بلاغك او تقديم بلاغ\n👮🏼‍♂️ارسل مشكلتك بالتفصيل\n\n📍سيتم تحويل رسالتك إلى قسم البلاغات",
+            "help": "📮 ارسل طلب المساعدة\n\n📍 سيتم تحويل رسالتك إلى قسم المساعدة"
+        }
 
-        elif call.data == "dev":
-    await call.message.answer(
-        "💬 **ارسل الان رسالتك للتواصل مع المطور**\n"
-        "📍 سيتم تحويل رسالتك إلى المطور البوت",
-        reply_markup=cancel_button()
-    )
-
-        await call.message.answer(
-    "💬 **ارسل الان رسالتك للاشتراك في الإعلانات أو استفسار عن الإعلانات**\n"
-    "📍 سيتم تحويل رسالتك إلى قسم الإعلانات",
-    reply_markup=cancel_button()
-        )
-
-        elif call.data == "report":
-    await call.message.answer(
-        "🚨 **ارسل الان بلاغك أو تقديم بلاغ**\n"
-        "👮🏼‍♂️ ارسل مشكلتك بالتفصيل\n"
-        "📍 سيتم تحويل رسالتك إلى قسم البلاغات",
-        reply_markup=cancel_button()
-    )
-
-        elif call.data == "help":
-    await call.message.answer(
-"""⚠️ دليل استخدام البوت
-
-━━━━━━━━━━━━━━
-
-🔞 الاشتراك في الكلوزات (VIP)
-يمكنك الاشتراك في قائمة الاشتراكات المميزة مثل الكلوزات وغيرها من المحتويات المتاحة.
-
-📍 للإشتراك أو الاستفسار:
-اضغط على زر "الاشتراك في الكلوزات" من القائمة الرئيسية.
-
-بعدها يمكنك:
-• طلب الاشتراك في المحتوى المميز
-• الاستفسار عن التفاصيل المتوفرة
-• 🔞 كلوزر VIP
-• 🔞 أطفال
-• 🔞 بلاص
-• 🔞 خليجي
-• 🔞 اشتراك في 5 قنوات VIP
-
-⚠️ ملاحظة:
-أرسل اسم الاشتراك الذي تريده وسوف نرسل لك جميع التفاصيل الخاصة بالاشتراك والسعر.
-
-━━━━━━━━━━━━━━
-
-📢 الإعلانات
-اضغط على زر "الإعلانات" من القائمة الرئيسية.
-يمكنك:
-• طلب إعلان
-• الاستفسار عن الإعلان
-• متابعة طلبك مع الإدارة
-
-━━━━━━━━━━━━━━
-
-💬 تواصل مع المطور
-اضغط على زر "تواصل المطور" من القائمة الرئيسية.
-يمكنك:
-• إرسال رسالة للمطور
-• تقديم مشكلة أو بلاغ
-• طلب دعم أو مساعدة
-
-━━━━━━━━━━━━━━
-
-🚨 البلاغات
-يمكنك تقديم بلاغ أو مشكلة بسهولة:
-• تقديم بلاغ
-• إرسال تفاصيل أو ملاحظات
-
-📍 سيتم تحويل البلاغ للإدارة مباشرة لمراجعته.
-
-━━━━━━━━━━━━━━
-
-⚠️ تنبيه:
-يمنع إرسال رسائل مزعجة أو بدون سبب.""",
-        reply_markup=cancel_button()
-    )
+        await call.message.answer(texts[call.data], reply_markup=cancel_button())
 
     elif call.data == "cancel":
-        await call.message.answer("📋 تم إلغاء الإرسال، العودة للقائمة الرئيسية.",
-                                  reply_markup=menu())  # العودة للقائمة الرئيسية
-        return
+        await call.message.answer(
+            "📋 تم إلغاء الإرسال، العودة للقائمة الرئيسية.",
+            reply_markup=menu()
+        )
 
-# ---------------- ADMIN (REPLY + STEPS) ----------------
+    elif call.data.startswith("ban_") and uid == ADMIN_ID:
+        user_id = int(call.data.split("_")[1])
+        banned_users.add(user_id)
+        await call.message.answer("⛔️ تم حظر المستخدم")
+
+    elif call.data.startswith("unban_") and uid == ADMIN_ID:
+        user_id = int(call.data.split("_")[1])
+        banned_users.discard(user_id)
+        await call.message.answer("✅ تم فك حظر المستخدم")
+
+# ---------------- ADMIN HANDLER ----------------
+
 @dp.message(F.from_user.id == ADMIN_ID)
 async def admin_handler(msg: Message):
     uid = msg.from_user.id
@@ -225,7 +174,7 @@ async def admin_handler(msg: Message):
         if mid in msg_map:
             user_id = msg_map[mid]
             await msg.copy_to(user_id)
-            await msg.answer("✅ تم إرسال الرسالة إلى المستخدم")
+            await msg.answer("📩 تم الرد على المستخدم بنجاح")
             return
 
     if uid not in admin_step:
@@ -241,9 +190,9 @@ async def admin_handler(msg: Message):
             return
 
         try:
-            chat = await bot.get_chat(ch)
-
+            await bot.get_chat(ch)
             member = await bot.get_chat_member(chat_id=ch, user_id=ADMIN_ID)
+
             if member.status not in ["administrator", "creator"]:
                 await msg.answer("❌ البوت مو أدمن بالقناة")
                 return
@@ -253,24 +202,27 @@ async def admin_handler(msg: Message):
             return
 
         REQUIRED_CHANNELS.append(ch)
-        await msg.answer("✅ تم إضافة القناة بنجاح")
+        await msg.answer("✅ تم إضافة القناة")
         admin_step.pop(uid)
 
     elif step == "del_channel":
         ch = msg.text.strip()
+
         if ch in REQUIRED_CHANNELS:
             REQUIRED_CHANNELS.remove(ch)
             await msg.answer("❌ تم حذف القناة")
         else:
-            await msg.answer("⚠️ غير موجودة")
+            await msg.answer("⚠️ القناة غير موجودة")
+
         admin_step.pop(uid)
 
     elif step == "ban":
         try:
             banned_users.add(int(msg.text))
-            await msg.answer("⛔️ تم الحظر")
+            await msg.answer("⛔️ تم حظر المستخدم")
         except:
-            await msg.answer("⚠️ خطأ ID")
+            await msg.answer("⚠️ خطأ بالـ ID")
+
         admin_step.pop(uid)
 
     elif step == "unban":
@@ -278,10 +230,12 @@ async def admin_handler(msg: Message):
             banned_users.discard(int(msg.text))
             await msg.answer("✅ تم فك الحظر")
         except:
-            await msg.answer("⚠️ خطأ ID")
+            await msg.answer("⚠️ خطأ بالـ ID")
+
         admin_step.pop(uid)
 
-# ---------------- USER → ADMIN ----------------
+# ---------------- USER TO ADMIN ----------------
+
 @dp.message()
 async def all_messages(msg: Message):
     uid = msg.from_user.id
@@ -296,14 +250,27 @@ async def all_messages(msg: Message):
         await msg.answer("⚠️ يجب الاشتراك")
         return
 
+    section_names = {
+        "sub": "🔞 اشتراك في الكلوزات",
+        "dev": "💬 تواصل المطور",
+        "ads": "📢 قسم الإعلانات",
+        "report": "🚨 قسم البلاغات",
+        "help": "📮 المساعدة"
+    }
+
+    section = user_state.get(uid, "help")
+
     info_msg = await bot.send_message(
         ADMIN_ID,
         f"👤 الاسم: {msg.from_user.full_name}\n"
         f"🔗 اليوزر: @{msg.from_user.username if msg.from_user.username else 'ماكو'}\n"
         f"🆔 الايدي: {uid}\n"
-        f"📌 الخدمة: {user_state.get(uid, 'غير محدد')}",
+        f"📌 القسم: {section_names.get(section, section)}",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="⛔️ حظر", callback_data=f"ban_{uid}")]
+            [
+                InlineKeyboardButton(text="⛔️ حظر", callback_data=f"ban_{uid}"),
+                InlineKeyboardButton(text="❌ فك الحظر", callback_data=f"unban_{uid}")
+            ]
         ])
     )
 
@@ -312,12 +279,18 @@ async def all_messages(msg: Message):
     msg_map[info_msg.message_id] = uid
     msg_map[sent.message_id] = uid
 
-    await msg.answer(
-        "📩 تم إرسال رسالتك إلى الإدارة بنجاح\n\n"
-        "💬 سيتم الرد عليك في أقرب وقت ممكن"
-    )
+    confirm_texts = {
+        "sub": "💬 تم إرسال طلبك إلى قسم الاشتراكات\n📍 يرجى الانتظار لحين الرد من فريق الاشتراكات",
+        "dev": "💬 تم إرسال رسالتك إلى قسم المطور\n📍 يرجى الانتظار لحين الرد من فريق التطوير",
+        "ads": "💬 تم إرسال طلبك إلى قسم الإعلانات\n📍 يرجى الانتظار لحين الرد من فريق الإعلانات",
+        "report": "🚨 تم استلام البلاغ بنجاح\n📩 تم تحويله إلى قسم البلاغات\n📍 سيتم مراجعته من قبل فريق البلاغات قريباً",
+        "help": "📩 تم إرسال رسالتك إلى الإدارة بنجاح\n💬 سيتم الرد عليك في أقرب وقت ممكن"
+    }
+
+    await msg.answer(confirm_texts.get(section, confirm_texts["help"]))
 
 # ---------------- RUN ----------------
+
 async def main():
     await dp.start_polling(bot)
 
