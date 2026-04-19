@@ -17,7 +17,7 @@ msg_map = {}
 admin_step = {}
 banned_users = set()
 
-# ---------------- CHECK SUB ----------------
+# ---------------- CHECK SUB (FIXED) ----------------
 
 async def is_subscribed(user_id: int) -> bool:
     if not REQUIRED_CHANNELS:
@@ -25,11 +25,15 @@ async def is_subscribed(user_id: int) -> bool:
 
     for ch in REQUIRED_CHANNELS:
         try:
-            member = await bot.get_chat_member(chat_id=ch, user_id=user_id)
+            chat = await bot.get_chat(ch)
+            member = await bot.get_chat_member(chat.id, user_id)
+
             if member.status not in ["member", "administrator", "creator"]:
                 return False
+
         except:
             return False
+
     return True
 
 # ---------------- FORCE JOIN ----------------
@@ -176,6 +180,18 @@ async def admin_handler(msg: Message):
             await msg.answer("⚠️ لازم اليوزر يبدأ بـ @")
             return
 
+        try:
+            chat = await bot.get_chat(ch)
+
+            bot_member = await bot.get_chat_member(chat.id, bot.id)
+            if bot_member.status not in ["administrator", "creator"]:
+                await msg.answer("❌ لازم تضيف البوت أدمن بالقناة أولاً")
+                return
+
+        except:
+            await msg.answer("❌ القناة غير موجودة أو اليوزر خطأ")
+            return
+
         REQUIRED_CHANNELS.append(ch)
         await msg.answer("✅ تم إضافة القناة")
         admin_step.pop(uid)
@@ -192,13 +208,21 @@ async def admin_handler(msg: Message):
         admin_step.pop(uid)
 
     elif step == "ban":
-        banned_users.add(int(msg.text))
-        await msg.answer("⛔️ تم حظر المستخدم")
+        try:
+            banned_users.add(int(msg.text))
+            await msg.answer("⛔️ تم حظر المستخدم")
+        except:
+            await msg.answer("⚠️ خطأ بالـ ID")
+
         admin_step.pop(uid)
 
     elif step == "unban":
-        banned_users.discard(int(msg.text))
-        await msg.answer("✅ تم فك الحظر")
+        try:
+            banned_users.discard(int(msg.text))
+            await msg.answer("✅ تم فك الحظر")
+        except:
+            await msg.answer("⚠️ خطأ بالـ ID")
+
         admin_step.pop(uid)
 
 # ---------------- USER TO ADMIN ----------------
@@ -245,8 +269,6 @@ async def all_messages(msg: Message):
 
     msg_map[info_msg.message_id] = uid
     msg_map[sent.message_id] = uid
-
-    # ---------------- NEW CONFIRM TEXTS ----------------
 
     confirm_texts = {
         "sub": "💬 تم إرسال طلبك إلى قسم الاشتراكات\n\n📍 سيتم تحويلك إلى قسم الاشتراكات",
