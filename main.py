@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.enums import ParseMode
 
-API_TOKEN = "8789764033:AAGqlQLMV4hHm-JyF2nJR80P1SngUOPEaHc"
+API_TOKEN = "8789764033:AAH4g83LdSG-MWYyWVYDbLApWGn90Jd-F7M"
 ADMIN_ID = 68205305
 
 bot = Bot(token=API_TOKEN, parse_mode=ParseMode.HTML)
@@ -120,30 +120,36 @@ async def cb(call: CallbackQuery):
             await call.message.answer("❌ ارسل ID لفك الحظر")
 
     elif call.data == "sub":
-        user_state[uid] = "اشتراك"
         await call.message.answer("💬 ارسل رسالتك للاشتراك")
 
     elif call.data == "dev":
-        user_state[uid] = "مطور"
         await call.message.answer("💬 ارسل رسالتك للمطور")
 
     elif call.data == "ads":
-        user_state[uid] = "إعلانات"
         await call.message.answer("💬 ارسل طلب الإعلان")
 
     elif call.data == "report":
-        user_state[uid] = "بلاغات"
         await call.message.answer("🚨 ارسل بلاغك")
 
     elif call.data == "help":
         await call.message.answer("📮 المساعدة")
 
-# ---------------- ADMIN STEPS ----------------
+# ---------------- ADMIN (REPLY + STEPS) ----------------
 @dp.message(F.from_user.id == ADMIN_ID)
-async def admin_steps(msg: Message):
+async def admin_handler(msg: Message):
 
     uid = msg.from_user.id
 
+    # ✅ نظام الرد على المستخدم
+    if msg.reply_to_message:
+        mid = msg.reply_to_message.message_id
+
+        if mid in msg_map:
+            user_id = msg_map[mid]
+            await msg.copy_to(user_id)
+            return
+
+    # ---------------- أوامر الأدمن ----------------
     if uid not in admin_step:
         return
 
@@ -210,17 +216,6 @@ async def all_messages(msg: Message):
         "📩 تم إرسال رسالتك إلى الإدارة بنجاح\n\n"
         "💬 سيتم الرد عليك في أقرب وقت ممكن"
     )
-
-# ---------------- ADMIN → USER (FIXED REPLY SYSTEM) ----------------
-@dp.message(F.from_user.id == ADMIN_ID)
-async def admin_reply(msg: Message):
-
-    if msg.reply_to_message:
-        mid = msg.reply_to_message.message_id
-
-        if mid in msg_map:
-            uid = msg_map[mid]
-            await msg.copy_to(uid)
 
 # ---------------- RUN ----------------
 async def main():
