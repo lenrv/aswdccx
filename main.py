@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.enums import ParseMode
 
-API_TOKEN = "8789764033:AAHlEeRxClrBtPt-uSn7D8JQKAw7zaaAEWw"
+API_TOKEN = "8789764033:AAFVHxjlU0NoNcj6552i_h-t2h_E2bznWe4"
 ADMIN_ID = 68205305
 
 bot = Bot(token=API_TOKEN, parse_mode=ParseMode.HTML)
@@ -25,8 +25,8 @@ async def is_subscribed(user_id: int) -> bool:
 
     for ch in REQUIRED_CHANNELS:
         try:
-            m = await bot.get_chat_member(chat_id=ch, user_id=user_id)
-            if m.status in ["left", "kicked"]:
+            member = await bot.get_chat_member(chat_id=ch, user_id=user_id)
+            if member.status not in ["member", "administrator", "creator"]:
                 return False
         except:
             return False
@@ -158,13 +158,28 @@ async def admin_handler(msg: Message):
 
     step = admin_step[uid]
 
+    # ---------------- ADD CHANNEL (FIXED + MESSAGES) ----------------
     if step == "add_channel":
         ch = msg.text.strip()
+
         if not ch.startswith("@"):
-            await msg.answer("⚠️ ارسل @ صحيح")
+            await msg.answer("⚠️ لازم اليوزر يبدأ بـ @")
             return
+
+        try:
+            chat = await bot.get_chat(ch)
+
+            member = await bot.get_chat_member(chat_id=ch, user_id=ADMIN_ID)
+            if member.status not in ["administrator", "creator"]:
+                await msg.answer("❌ البوت مو أدمن بالقناة")
+                return
+
+        except:
+            await msg.answer("❌ القناة غلط أو غير موجودة")
+            return
+
         REQUIRED_CHANNELS.append(ch)
-        await msg.answer("✅ تم إضافة القناة")
+        await msg.answer("✅ تم إضافة القناة بنجاح")
         admin_step.pop(uid)
 
     elif step == "del_channel":
