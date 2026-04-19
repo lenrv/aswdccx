@@ -147,20 +147,7 @@ async def cb(call: CallbackQuery):
         await call.message.answer(texts[call.data], reply_markup=cancel_button())
 
     elif call.data == "cancel":
-        await call.message.answer(
-            "📋 تم إلغاء الإرسال، العودة للقائمة الرئيسية.",
-            reply_markup=menu()
-        )
-
-    elif call.data.startswith("ban_") and uid == ADMIN_ID:
-        user_id = int(call.data.split("_")[1])
-        banned_users.add(user_id)
-        await call.message.answer("⛔️ تم حظر المستخدم")
-
-    elif call.data.startswith("unban_") and uid == ADMIN_ID:
-        user_id = int(call.data.split("_")[1])
-        banned_users.discard(user_id)
-        await call.message.answer("✅ تم فك حظر المستخدم")
+        await call.message.answer("📋 تم إلغاء الإرسال، العودة للقائمة الرئيسية.", reply_markup=menu())
 
 # ---------------- ADMIN HANDLER ----------------
 
@@ -189,18 +176,6 @@ async def admin_handler(msg: Message):
             await msg.answer("⚠️ لازم اليوزر يبدأ بـ @")
             return
 
-        try:
-            await bot.get_chat(ch)
-            member = await bot.get_chat_member(chat_id=ch, user_id=ADMIN_ID)
-
-            if member.status not in ["administrator", "creator"]:
-                await msg.answer("❌ البوت مو أدمن بالقناة")
-                return
-
-        except:
-            await msg.answer("❌ القناة غلط أو غير موجودة")
-            return
-
         REQUIRED_CHANNELS.append(ch)
         await msg.answer("✅ تم إضافة القناة")
         admin_step.pop(uid)
@@ -217,21 +192,13 @@ async def admin_handler(msg: Message):
         admin_step.pop(uid)
 
     elif step == "ban":
-        try:
-            banned_users.add(int(msg.text))
-            await msg.answer("⛔️ تم حظر المستخدم")
-        except:
-            await msg.answer("⚠️ خطأ بالـ ID")
-
+        banned_users.add(int(msg.text))
+        await msg.answer("⛔️ تم حظر المستخدم")
         admin_step.pop(uid)
 
     elif step == "unban":
-        try:
-            banned_users.discard(int(msg.text))
-            await msg.answer("✅ تم فك الحظر")
-        except:
-            await msg.answer("⚠️ خطأ بالـ ID")
-
+        banned_users.discard(int(msg.text))
+        await msg.answer("✅ تم فك الحظر")
         admin_step.pop(uid)
 
 # ---------------- USER TO ADMIN ----------------
@@ -279,12 +246,14 @@ async def all_messages(msg: Message):
     msg_map[info_msg.message_id] = uid
     msg_map[sent.message_id] = uid
 
+    # ---------------- NEW CONFIRM TEXTS ----------------
+
     confirm_texts = {
-        "sub": "💬 تم إرسال طلبك إلى قسم الاشتراكات\n📍 يرجى الانتظار لحين الرد من فريق الاشتراكات",
-        "dev": "💬 تم إرسال رسالتك إلى قسم المطور\n📍 يرجى الانتظار لحين الرد من فريق التطوير",
-        "ads": "💬 تم إرسال طلبك إلى قسم الإعلانات\n📍 يرجى الانتظار لحين الرد من فريق الإعلانات",
-        "report": "🚨 تم استلام البلاغ بنجاح\n📩 تم تحويله إلى قسم البلاغات\n📍 سيتم مراجعته من قبل فريق البلاغات قريباً",
-        "help": "📩 تم إرسال رسالتك إلى الإدارة بنجاح\n💬 سيتم الرد عليك في أقرب وقت ممكن"
+        "sub": "💬 تم إرسال طلبك إلى قسم الاشتراكات\n\n📍 سيتم تحويلك إلى قسم الاشتراكات",
+        "ads": "💬 تم إرسال رسالتك إلى قسم الإعلانات\n\n📍 سيتم تحويل رسالتك إلى قسم الإعلانات",
+        "dev": "💬 تم إرسال رسالتك إلى قسم المطور\n\n📍 سيتم تحويل رسالتك إلى قسم المطور",
+        "report": "🚨 تم استلام البلاغ\n👮🏼‍♂️ تم تحويله إلى قسم البلاغات\n\n📍 سيتم مراجعته من قبل الفريق",
+        "help": "📩 تم إرسال رسالتك بنجاح\n\n📍 سيتم الرد عليك من الإدارة قريباً"
     }
 
     await msg.answer(confirm_texts.get(section, confirm_texts["help"]))
