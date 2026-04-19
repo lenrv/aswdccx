@@ -3,7 +3,7 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.enums import ParseMode
 
-API_TOKEN = "8789764033:AAEHtVKB4xJvvrdlIipg8b1U8JjK_6xWl34"
+API_TOKEN = "8789764033:AAEdqYi_PpmKUFuFHRuuqczAAJ-knUpteGY"
 ADMIN_ID = 68205305
 
 bot = Bot(token=API_TOKEN, parse_mode=ParseMode.HTML)
