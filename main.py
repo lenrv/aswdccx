@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.enums import ParseMode
 
-API_TOKEN = "8789764033:AAHuULIxUvtOZkD7j2cGuJENZrUu76mVbeI"
+API_TOKEN = "8789764033:AAGqlQLMV4hHm-JyF2nJR80P1SngUOPEaHc"
 ADMIN_ID = 68205305
 
 bot = Bot(token=API_TOKEN, parse_mode=ParseMode.HTML)
@@ -189,7 +189,7 @@ async def admin_steps(msg: Message):
 
         admin_step.pop(uid)
 
-# ---------------- USER MESSAGES ----------------
+# ---------------- USER → ADMIN ----------------
 @dp.message()
 async def all_messages(msg: Message):
 
@@ -206,11 +206,21 @@ async def all_messages(msg: Message):
     fwd = await msg.forward(ADMIN_ID)
     msg_map[fwd.message_id] = msg.from_user.id
 
-    # 🔥 رسالة التأكيد الجديدة
     await msg.answer(
         "📩 تم إرسال رسالتك إلى الإدارة بنجاح\n\n"
         "💬 سيتم الرد عليك في أقرب وقت ممكن"
     )
+
+# ---------------- ADMIN → USER (FIXED REPLY SYSTEM) ----------------
+@dp.message(F.from_user.id == ADMIN_ID)
+async def admin_reply(msg: Message):
+
+    if msg.reply_to_message:
+        mid = msg.reply_to_message.message_id
+
+        if mid in msg_map:
+            uid = msg_map[mid]
+            await msg.copy_to(uid)
 
 # ---------------- RUN ----------------
 async def main():
