@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.enums import ParseMode
 
-API_TOKEN = "8789764033:AAH4g83LdSG-MWYyWVYDbLApWGn90Jd-F7M"
+API_TOKEN = "8789764033:AAHgHaVpcbHPS3cNGpUOZvpzwIou4DUxRKM"
 ADMIN_ID = 68205305
 
 bot = Bot(token=API_TOKEN, parse_mode=ParseMode.HTML)
@@ -140,7 +140,7 @@ async def admin_handler(msg: Message):
 
     uid = msg.from_user.id
 
-    # ✅ نظام الرد على المستخدم
+    # ✅ الرد على المستخدم
     if msg.reply_to_message:
         mid = msg.reply_to_message.message_id
 
@@ -157,24 +157,20 @@ async def admin_handler(msg: Message):
 
     if step == "add_channel":
         ch = msg.text.strip()
-
         if not ch.startswith("@"):
             await msg.answer("⚠️ ارسل @ صحيح")
             return
-
         REQUIRED_CHANNELS.append(ch)
         await msg.answer("✅ تم إضافة القناة")
         admin_step.pop(uid)
 
     elif step == "del_channel":
         ch = msg.text.strip()
-
         if ch in REQUIRED_CHANNELS:
             REQUIRED_CHANNELS.remove(ch)
             await msg.answer("❌ تم حذف القناة")
         else:
             await msg.answer("⚠️ غير موجودة")
-
         admin_step.pop(uid)
 
     elif step == "ban":
@@ -183,7 +179,6 @@ async def admin_handler(msg: Message):
             await msg.answer("⛔️ تم الحظر")
         except:
             await msg.answer("⚠️ خطأ ID")
-
         admin_step.pop(uid)
 
     elif step == "unban":
@@ -192,25 +187,36 @@ async def admin_handler(msg: Message):
             await msg.answer("✅ تم فك الحظر")
         except:
             await msg.answer("⚠️ خطأ ID")
-
         admin_step.pop(uid)
 
 # ---------------- USER → ADMIN ----------------
 @dp.message()
 async def all_messages(msg: Message):
 
-    if msg.from_user.id == ADMIN_ID:
+    uid = msg.from_user.id
+
+    if uid == ADMIN_ID:
         return
 
-    if msg.from_user.id in banned_users:
+    if uid in banned_users:
         return
 
-    if not await is_subscribed(msg.from_user.id):
+    if not await is_subscribed(uid):
         await msg.answer("⚠️ يجب الاشتراك")
         return
 
-    fwd = await msg.forward(ADMIN_ID)
-    msg_map[fwd.message_id] = msg.from_user.id
+    # 👤 معلومات المستخدم (مستقلة)
+    info_msg = await bot.send_message(
+        ADMIN_ID,
+        f"👤 من: {msg.from_user.full_name}\n🆔 {uid}"
+    )
+
+    # 📩 الرسالة الأصلية
+    sent = await msg.copy_to(ADMIN_ID)
+
+    # 🔗 ربط الاثنين لنظام الرد
+    msg_map[info_msg.message_id] = uid
+    msg_map[sent.message_id] = uid
 
     await msg.answer(
         "📩 تم إرسال رسالتك إلى الإدارة بنجاح\n\n"
