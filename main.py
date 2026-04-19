@@ -97,7 +97,7 @@ async def start(msg: Message):
     if msg.from_user.id == ADMIN_ID:
         await msg.answer("👋 مرحبا بك في البوت", reply_markup=admin_panel())
     else:
-        await msg.answer("💬 مرحبا بك في البوت\n\nاختر القسم المناسب:", reply_markup=menu())
+        await msg.answer("👋🏻 مرحبا بك في البوت\n\nاختر القسم المناسب:", reply_markup=menu())
 
 # ---------------- CALLBACK ----------------
 
@@ -116,7 +116,7 @@ async def cb(call: CallbackQuery):
     if call.data == "check":
         if await is_subscribed(uid):
             await call.message.answer("✅ تم تحقق بنجاح")
-            await call.message.answer("👋 مرحبا بك", reply_markup=menu())
+            await call.message.answer("👋🏻 مرحبا بك", reply_markup=menu())
         else:
             await call.message.answer("❌ غير مشترك", reply_markup=join_kb())
 
