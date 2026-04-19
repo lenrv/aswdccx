@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.enums import ParseMode
 
-API_TOKEN = "8789764033:AAHbFrfTP1M0O9cPIbBnHEKSihlnHN1uk3I"
+API_TOKEN = "8789764033:AAHlEeRxClrBtPt-uSn7D8JQKAw7zaaAEWw"
 ADMIN_ID = 68205305
 
 bot = Bot(token=API_TOKEN, parse_mode=ParseMode.HTML)
@@ -32,7 +32,6 @@ async def is_subscribed(user_id: int) -> bool:
             return False
     return True
 
-
 # ---------------- FORCE JOIN ----------------
 def join_kb():
     kb = []
@@ -40,7 +39,6 @@ def join_kb():
         kb.append([InlineKeyboardButton(text=f"📢 اشتراك {ch}", url=f"https://t.me/{ch.replace('@','')}")])
     kb.append([InlineKeyboardButton(text="🔄 تحقق", callback_data="check")])
     return InlineKeyboardMarkup(inline_keyboard=kb)
-
 
 # ---------------- MENU ----------------
 def menu():
@@ -51,7 +49,6 @@ def menu():
         [InlineKeyboardButton(text="🚨 قسم البلاغات", callback_data="report")],
         [InlineKeyboardButton(text="📮 المساعدة", callback_data="help")],
     ])
-
 
 # ---------------- ADMIN PANEL ----------------
 def admin_panel():
@@ -65,7 +62,6 @@ def admin_panel():
             InlineKeyboardButton(text="❌ إلغاء حظر", callback_data="unban")
         ]
     ])
-
 
 # ---------------- START ----------------
 @dp.message(F.text == "/start")
@@ -83,7 +79,6 @@ async def start(msg: Message):
         await msg.answer("👋 مرحبا بك في البوت", reply_markup=admin_panel())
     else:
         await msg.answer("👋 مرحبا بك في البوت\n\nاختر القسم المناسب:", reply_markup=menu())
-
 
 # ---------------- CALLBACK ----------------
 @dp.callback_query()
@@ -124,26 +119,24 @@ async def cb(call: CallbackQuery):
             admin_step[uid] = "unban"
             await call.message.answer("❌ ارسل ID لفك الحظر")
 
-    elif call.data == "sub":
-        user_state[uid] = "sub"
-        await call.message.answer("💬 ارسل رسالتك")
+    elif call.data in ["sub", "dev", "ads", "report", "help"]:
+        user_state[uid] = call.data
 
-    elif call.data == "dev":
-        user_state[uid] = "dev"
-        await call.message.answer("💬 ارسل رسالتك")
+        if call.data == "sub":
+            await call.message.answer("💬 ارسل رسالتك للاشتراك")
+        elif call.data == "dev":
+            await call.message.answer("💬 ارسل رسالتك للمطور")
+        elif call.data == "ads":
+            await call.message.answer("💬 ارسل طلب الإعلان")
+        elif call.data == "report":
+            await call.message.answer("🚨 ارسل بلاغك")
+        elif call.data == "help":
+            await call.message.answer("📮 المساعدة")
 
-    elif call.data == "ads":
-        user_state[uid] = "ads"
-        await call.message.answer("💬 ارسل طلب الإعلان")
-
-    elif call.data == "report":
-        user_state[uid] = "report"
-        await call.message.answer("🚨 ارسل بلاغك")
-
-    elif call.data == "help":
-        user_state[uid] = "help"
-        await call.message.answer("📮 ارسل استفسارك")
-
+    elif call.data.startswith("ban_"):
+        target = int(call.data.split("_")[1])
+        banned_users.add(target)
+        await call.message.answer("⛔️ تم حظر المستخدم")
 
 # ---------------- ADMIN (REPLY + STEPS) ----------------
 @dp.message(F.from_user.id == ADMIN_ID)
@@ -157,7 +150,7 @@ async def admin_handler(msg: Message):
         if mid in msg_map:
             user_id = msg_map[mid]
             await msg.copy_to(user_id)
-            await msg.answer("✅ تم إرسال الرد إلى المستخدم")
+            await msg.answer("✅ تم إرسال الرسالة إلى المستخدم")
             return
 
     if uid not in admin_step:
@@ -199,7 +192,6 @@ async def admin_handler(msg: Message):
             await msg.answer("⚠️ خطأ ID")
         admin_step.pop(uid)
 
-
 # ---------------- USER → ADMIN ----------------
 @dp.message()
 async def all_messages(msg: Message):
@@ -216,41 +208,26 @@ async def all_messages(msg: Message):
         await msg.answer("⚠️ يجب الاشتراك")
         return
 
-    section = user_state.get(uid, "غير محدد")
-    username = f"@{msg.from_user.username}" if msg.from_user.username else "لا يوجد"
-
-    # 👤 معلومات + زر الحظر (فقط رسالة وحدة)
-    info_kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="⛔️ حضر المستخدم", callback_data=f"ban_{uid}")]
-    ])
-
-    await bot.send_message(
+    info_msg = await bot.send_message(
         ADMIN_ID,
         f"👤 الاسم: {msg.from_user.full_name}\n"
+        f"🔗 اليوزر: @{msg.from_user.username if msg.from_user.username else 'ماكو'}\n"
         f"🆔 الايدي: {uid}\n"
-        f"📌 اليوزر: {username}\n"
-        f"📂 القسم: {section}",
-        reply_markup=info_kb
+        f"📌 الخدمة: {user_state.get(uid, 'غير محدد')}",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="⛔️ حظر", callback_data=f"ban_{uid}")]
+        ])
     )
 
-    # 📩 إرسال نفس الرسالة بكل أنواعها (copy = كل شيء)
-    await msg.copy_to(ADMIN_ID)
+    sent = await msg.copy_to(ADMIN_ID)
 
-    msg_map[msg.message_id] = uid
+    msg_map[info_msg.message_id] = uid
+    msg_map[sent.message_id] = uid
 
     await msg.answer(
         "📩 تم إرسال رسالتك إلى الإدارة بنجاح\n\n"
         "💬 سيتم الرد عليك في أقرب وقت ممكن"
     )
-
-
-# ---------------- BAN BUTTON ----------------
-@dp.callback_query(F.data.startswith("ban_"))
-async def ban_user(call: CallbackQuery):
-    user_id = int(call.data.split("_")[1])
-    banned_users.add(user_id)
-    await call.message.answer("⛔️ تم حظر المستخدم")
-
 
 # ---------------- RUN ----------------
 async def main():
