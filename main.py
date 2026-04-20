@@ -123,7 +123,7 @@ if call.data != "check":
     now = time.time()
 
     if uid in check_cooldown and now - check_cooldown[uid] < 3:
-        await call.answer("⏳ يرجى الانتظار قليلاً قبل إعادة المحاولة", show_alert=True)
+        await call.answer("⏳ يرجى الانتظار قليلاً", show_alert=True)
         return
 
     check_cooldown[uid] = now
@@ -132,14 +132,14 @@ if call.data != "check":
         await call.answer("✅ تم التحقق", show_alert=True)
 
         await call.message.answer(
-            "✅ تم التحقق من الاشتراك بنجاح.\n\n"
-            "📋 يمكنك الآن استخدام البوت واختيار القسم المناسب من القائمة أدناه.",
+            "✅ تم التحقق من الاشتراك بنجاح\n\n"
+            "📋 يمكنك الآن استخدام البوت واختيار القسم المناسب من القائمة أدناه",
             reply_markup=menu()
         )
 
     else:
         await call.answer(
-            "❌ لم يتم العثور على اشتراك.\n📢 يرجى الاشتراك في القنوات ثم إعادة المحاولة.",
+            "❌ يرجى الاشتراك في القنوات ثم إعادة المحاولة",
             show_alert=True
         )
 
