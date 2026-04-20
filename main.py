@@ -25,13 +25,13 @@ async def is_subscribed(user_id: int) -> bool:
 
     for ch in REQUIRED_CHANNELS:
         try:
-            chat = await bot.get_chat(ch)
-            member = await bot.get_chat_member(chat.id, user_id)
+            member = await bot.get_chat_member(ch, user_id)
 
-            if member.status not in ["member", "administrator", "creator"]:
+            if member.status in ["left", "kicked"]:
                 return False
 
-        except:
+        except Exception as e:
+            print("SUB ERROR:", e)
             return False
 
     return True
