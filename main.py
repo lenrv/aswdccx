@@ -25,13 +25,13 @@ async def is_subscribed(user_id: int) -> bool:
 
     for ch in REQUIRED_CHANNELS:
         try:
-            member = await bot.get_chat_member(ch, user_id)
+            chat = await bot.get_chat(ch)
+            member = await bot.get_chat_member(chat.id, user_id)
 
-            if member.status in ["left", "kicked"]:
+            if member.status not in ["member", "administrator", "creator"]:
                 return False
 
-        except Exception as e:
-            print("SUB ERROR:", e)
+        except:
             return False
 
     return True
@@ -109,39 +109,16 @@ async def cb(call: CallbackQuery):
         await call.message.answer("⛔️ انت محظور")
         return
 
-
-    # منع الاستخدام بدون اشتراك (لكل الأزرار ما عدا تحقق)
-if call.data != "check":
     if not await is_subscribed(uid):
-        await call.message.answer(
-            "📢 لازم تشترك بالقنوات أولاً\n\n⬇️ اشترك وبعدين اضغط تحقق",
-            reply_markup=join_kb()
-        )
+        await call.message.answer("⚠️ غير مشترك", reply_markup=join_kb())
         return
 
     if call.data == "check":
-    now = time.time()
-
-    if uid in check_cooldown and now - check_cooldown[uid] < 3:
-        await call.answer("⏳ يرجى الانتظار قليلاً", show_alert=True)
-        return
-
-    check_cooldown[uid] = now
-
-    if await is_subscribed(uid):
-        await call.answer("✅ تم التحقق", show_alert=True)
-
-        await call.message.answer(
-            "✅ تم التحقق من الاشتراك بنجاح\n\n"
-            "📋 يمكنك الآن استخدام البوت واختيار القسم المناسب من القائمة أدناه",
-            reply_markup=menu()
-        )
-
-    else:
-        await call.answer(
-            "❌ يرجى الاشتراك في القنوات ثم إعادة المحاولة",
-            show_alert=True
-        )
+        if await is_subscribed(uid):
+            await call.message.answer("✅ تم تحقق بنجاح")
+            await call.message.answer("👋🏻 مرحبا بك", reply_markup=menu())
+        else:
+            await call.message.answer("❌ غير مشترك", reply_markup=join_kb())
 
     elif uid == ADMIN_ID:
         if call.data == "add":
